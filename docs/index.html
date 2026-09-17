@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CustomsFlow</title>
+<style>
+  :root {
+    --bg: #0b0f14;
+    --card: #131a22;
+    --border: #223041;
+    --text: #e7edf3;
+    --muted: #93a3b3;
+    --accent: #2dd4bf;
+    --erro: #f87171;
+    --ok: #34d399;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 {
+    font-size: 1.6rem;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h1 .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+  }
+  .subtitulo { color: var(--muted); margin-bottom: 28px; font-size: 0.95rem; }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .card .num { font-size: 2rem; font-weight: 700; }
+  .card .label { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
+  .card.ok .num { color: var(--ok); }
+  .card.erro .num { color: var(--erro); }
+  h2 { font-size: 1.05rem; margin: 0 0 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .execucao {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .execucao .data { color: var(--muted); font-size: 0.8rem; margin-bottom: 8px; }
+  .item {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  .item:first-of-type { border-top: none; }
+  .item .arquivo { font-weight: 600; }
+  .item .resumo { color: var(--muted); font-size: 0.78rem; }
+  .badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    height: fit-content;
+  }
+  .badge.ok { background: rgba(52,211,153,0.15); color: var(--ok); }
+  .badge.erro { background: rgba(248,113,113,0.15); color: var(--erro); }
+  .vazio { color: var(--muted); text-align: center; padding: 40px 0; font-size: 0.9rem; }
+  footer { text-align: center; color: var(--muted); font-size: 0.75rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="dot"></span> CustomsFlow</h1>
+  <div class="subtitulo">Ajuste automático de faturas por destino</div>
+
+  <div class="cards">
+    <div class="card ok">
+      <div class="num" id="total-ok">-</div>
+      <div class="label">Faturas processadas</div>
+    </div>
+    <div class="card erro">
+      <div class="num" id="total-erro">-</div>
+      <div class="label">Erros</div>
+    </div>
+    <div class="card">
+      <div class="num" id="total-execucoes">-</div>
+      <div class="label">Execuções com atividade</div>
+    </div>
+  </div>
+
+  <h2>Histórico recente</h2>
+  <div id="lista-execucoes"><div class="vazio">Carregando...</div></div>
+
+  <footer>Atualizado automaticamente a cada execução do robô · GitHub Actions</footer>
+</div>
+
+<script>
+async function carregar() {
+  try {
+    const resp = await fetch('dados.json?t=' + Date.now());
+    const dados = await resp.json();
+
+    document.getElementById('total-ok').textContent = dados.total_processadas ?? 0;
+    document.getElementById('total-erro').textContent = dados.total_erros ?? 0;
+    document.getElementById('total-execucoes').textContent = (dados.execucoes || []).length;
+
+    const container = document.getElementById('lista-execucoes');
+    const execucoes = dados.execucoes || [];
+
+    if (execucoes.length === 0) {
+      container.innerHTML = '<div class="vazio">Nenhuma fatura processada ainda.</div>';
+      return;
+    }
+
+    container.innerHTML = execucoes.slice(0, 30).map(exec => {
+      const itens = (exec.processadas || []).map(p => `
+        <div class="item">
+          <div>
+            <div class="arquivo">${escapeHtml(p.arquivo)}</div>
+            <div class="resumo">${escapeHtml(p.remetente || '')} — ${escapeHtml(p.resumo || '')}</div>
+          </div>
+          <span class="badge ${p.status === 'ok' ? 'ok' : 'erro'}">${p.status === 'ok' ? 'OK' : 'ERRO'}</span>
+        </div>
+      `).join('');
+
+      return `
+        <div class="execucao">
+          <div class="data">${escapeHtml(exec.data_hora || '')}</div>
+          ${itens}
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    document.getElementById('lista-execucoes').innerHTML =
+      '<div class="vazio">Não foi possível carregar os dados ainda.</div>';
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+carregar();
+</script>
+</body>
+</html>
