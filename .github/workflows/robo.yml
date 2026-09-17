@@ -1,0 +1,40 @@
+name: Robo CustomsFlow
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  processar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Rodar robo de e-mail
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
+          ALLOWED_SENDERS: ${{ secrets.ALLOWED_SENDERS }}
+        run: python email_watcher.py
+
+      - name: Salvar historico atualizado
+        run: |
+          git config user.name "customsflow-bot"
+          git config user.email "bot@customsflow.local"
+          git add docs/dados.json
+          git diff --quiet --cached || git commit -m "Atualiza historico de processamento"
+          git push
