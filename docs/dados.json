@@ -1,7 +1,60 @@
 {
-  "total_processadas": 26,
+  "total_processadas": 34,
   "total_erros": 0,
   "execucoes": [
+    {
+      "data_hora": "2026-09-17 22:26:30 UTC",
+      "processadas": [
+        {
+          "arquivo": "Invoice_PMT260457 - ORIGINAL US.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260444 - ORIGINAL US.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260494 - ORIGINAL CN.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260477 - ORIGINAL CN.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260493 - ORIGINAL KR.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260476 - ORIGINAL KR.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260472 - ORIGINAL SE.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260473 - ORIGINAL SE.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        }
+      ]
+    },
     {
       "data_hora": "2026-09-17 21:13:00 UTC",
       "processadas": [
