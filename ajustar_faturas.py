@@ -154,7 +154,7 @@ def process(input_path, output_path):
                 c.setFillColor(black)
                 c.setFont(FONT_VALUE, FONT_SIZE)
                 x = 53.2
-                top0 = anchor['top'] + 22.3
+                top0 = anchor['top'] + 14
                 for idx2, line in enumerate(WOOD_NOTE_LINES):
                     baseline = ph - (top0 + idx2 * 9.6) - 0.7 * FONT_SIZE
                     c.drawString(x, baseline, line)
