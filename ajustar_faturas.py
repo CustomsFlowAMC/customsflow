@@ -13,14 +13,30 @@ conforme regras por destino:
     "ITEM 2528000000 (G/L ACCOUNT 2461XX." na pagina 2.
 """
 
+import os
 import io
 import pdfplumber
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import white, black
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from pypdf import PdfReader, PdfWriter
 
-FONT_LABEL = "Courier-Bold"
-FONT_VALUE = "Courier"
+# ----------------------------------------------------------------------
+# FONTE EMBUTIDA
+# ----------------------------------------------------------------------
+# Usamos Liberation Mono (metricamente compativel com Courier New) e a
+# registramos como fonte TrueType, para que fique EMBUTIDA no PDF gerado.
+# Isso garante que o texto aparece igual em qualquer programa/celular que
+# abrir o arquivo, em vez de depender de qual fonte "Courier" cada
+# visualizador tem instalada (o que causava letras mais grossas/diferentes
+# em alguns celulares).
+FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+pdfmetrics.registerFont(TTFont("CustomsFlowMono", os.path.join(FONT_DIR, "LiberationMono-Regular.ttf")))
+pdfmetrics.registerFont(TTFont("CustomsFlowMono-Bold", os.path.join(FONT_DIR, "LiberationMono-Bold.ttf")))
+
+FONT_LABEL = "CustomsFlowMono-Bold"
+FONT_VALUE = "CustomsFlowMono"
 FONT_SIZE = 8
 
 WOOD_NOTE_LINES = [
