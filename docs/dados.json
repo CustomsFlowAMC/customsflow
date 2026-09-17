@@ -1,7 +1,48 @@
 {
-  "total_processadas": 12,
+  "total_processadas": 18,
   "total_erros": 0,
   "execucoes": [
+    {
+      "data_hora": "2026-09-17 10:53:50 UTC",
+      "processadas": [
+        {
+          "arquivo": "Invoice_PMT260507 ORIGINAL - IN.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: INDIA; 2 pagina(s); campo alterado para 'Country of Origin' / 'SWEDEN'; observacao da madeira incluida"
+        },
+        {
+          "arquivo": "Invoice_PMT260506 ORIGINAL - IN.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: INDIA; 2 pagina(s); campo alterado para 'Country of Origin' / 'SWEDEN'; observacao da madeira incluida"
+        },
+        {
+          "arquivo": "Invoice_PMT260505 ORIGINAL - SE.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260512 ORIGINAL - BE.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260511 ORIGINAL - BE.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260508 ORIGINAL - IN.pdf",
+          "remetente": "a***@gmail.com",
+          "status": "ok",
+          "resumo": "destino: INDIA; 2 pagina(s); campo alterado para 'Country of Origin' / 'SWEDEN'; observacao da madeira incluida"
+        }
+      ]
+    },
     {
       "data_hora": "2026-09-17 05:48:57 UTC",
       "processadas": [
