@@ -6,8 +6,8 @@ Roda dentro do GitHub Actions (agendado). A cada execucao:
 
   1) Conecta no Gmail via IMAP e procura e-mails NAO LIDOS vindos dos
      remetentes autorizados (variavel de ambiente ALLOWED_SENDERS).
-  2) Para cada e-mail encontrado, baixa os PDFs anexados e roda
-     ajustar_faturas.process() em cada um.
+  2) Para cada e-mail encontrado, baixa os PDFs anexados (direto ou dentro
+     de um .zip) e roda ajustar_faturas.process() em cada um.
   3) Responde o e-mail original (mesma thread) com os PDFs ja ajustados
      anexados.
   4) Marca o e-mail como lido/processado.
@@ -22,9 +22,11 @@ Variaveis de ambiente esperadas (configuradas como Secrets no GitHub):
 import os
 import json
 import ssl
+import zipfile
 import imaplib
 import smtplib
 import datetime
+from io import BytesIO
 from email import message_from_bytes
 from email.message import EmailMessage
 from email.utils import parseaddr
@@ -36,6 +38,16 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 465
 
 DADOS_PATH = os.path.join("docs", "dados.json")
+
+
+def mascarar_email(endereco):
+    """Mascara um e-mail para exibicao publica no painel, ex:
+    joelma.oliveira@consultant.volvo.com -> j***@consultant.volvo.com"""
+    if "@" not in endereco:
+        return "***"
+    usuario, dominio = endereco.split("@", 1)
+    inicial = usuario[0] if usuario else "*"
+    return f"{inicial}***@{dominio}"
 
 
 def carregar_dados():
@@ -56,6 +68,35 @@ def conectar_imap(email_addr, senha):
     imap.login(email_addr, senha)
     imap.select("INBOX")
     return imap
+
+
+def extrair_pdfs_do_anexo(nome_arquivo, conteudo):
+    """Recebe um anexo (nome + bytes) e devolve uma lista de (nome_pdf, bytes_pdf).
+    Se o anexo ja for um .pdf, devolve ele mesmo. Se for um .zip, extrai todos
+    os .pdf de dentro. Qualquer outro tipo de arquivo e ignorado."""
+    if not nome_arquivo:
+        return []
+
+    nome_lower = nome_arquivo.lower()
+
+    if nome_lower.endswith(".pdf"):
+        return [(nome_arquivo, conteudo)]
+
+    if nome_lower.endswith(".zip"):
+        pdfs = []
+        try:
+            with zipfile.ZipFile(BytesIO(conteudo)) as z:
+                for info in z.infolist():
+                    if info.is_dir():
+                        continue
+                    if info.filename.lower().endswith(".pdf"):
+                        nome_dentro_zip = os.path.basename(info.filename)
+                        pdfs.append((nome_dentro_zip, z.read(info)))
+        except zipfile.BadZipFile:
+            pass
+        return pdfs
+
+    return []
 
 
 def enviar_resposta(email_addr, senha, msg_original, arquivos_processados, assunto_resp, corpo_resp):
@@ -125,33 +166,37 @@ def main():
             houve_pdf = False
 
             for parte in msg.walk():
-                nome_arquivo = parte.get_filename()
-                if not nome_arquivo or not nome_arquivo.lower().endswith(".pdf"):
+                nome_anexo = parte.get_filename()
+                if not nome_anexo:
                     continue
-                houve_pdf = True
-                conteudo_original = parte.get_payload(decode=True)
+                conteudo_bruto = parte.get_payload(decode=True)
+                if not conteudo_bruto:
+                    continue
 
-                caminho_entrada = os.path.join("/tmp", nome_arquivo)
-                with open(caminho_entrada, "wb") as f:
-                    f.write(conteudo_original)
+                for nome_arquivo, conteudo_original in extrair_pdfs_do_anexo(nome_anexo, conteudo_bruto):
+                    houve_pdf = True
 
-                nome_saida = nome_arquivo
-                caminho_saida = os.path.join("/tmp", "ajustada_" + nome_arquivo)
+                    caminho_entrada = os.path.join("/tmp", nome_arquivo)
+                    with open(caminho_entrada, "wb") as f:
+                        f.write(conteudo_original)
 
-                try:
-                    resumo = process(caminho_entrada, caminho_saida)
-                    with open(caminho_saida, "rb") as f:
-                        conteudo_ajustado = f.read()
-                    anexos_processados.append((nome_saida, conteudo_ajustado))
-                    execucao["processadas"].append(
-                        {"arquivo": nome_arquivo, "remetente": remetente, "status": "ok", "resumo": resumo}
-                    )
-                    dados["total_processadas"] += 1
-                except Exception as e:
-                    execucao["processadas"].append(
-                        {"arquivo": nome_arquivo, "remetente": remetente, "status": "erro", "resumo": str(e)}
-                    )
-                    dados["total_erros"] += 1
+                    nome_saida = nome_arquivo
+                    caminho_saida = os.path.join("/tmp", "ajustada_" + nome_arquivo)
+
+                    try:
+                        resumo = process(caminho_entrada, caminho_saida)
+                        with open(caminho_saida, "rb") as f:
+                            conteudo_ajustado = f.read()
+                        anexos_processados.append((nome_saida, conteudo_ajustado))
+                        execucao["processadas"].append(
+                            {"arquivo": nome_arquivo, "remetente": mascarar_email(remetente), "status": "ok", "resumo": resumo}
+                        )
+                        dados["total_processadas"] += 1
+                    except Exception as e:
+                        execucao["processadas"].append(
+                            {"arquivo": nome_arquivo, "remetente": mascarar_email(remetente), "status": "erro", "resumo": str(e)}
+                        )
+                        dados["total_erros"] += 1
 
             if houve_pdf and anexos_processados:
                 enviar_resposta(email_addr, senha, msg, anexos_processados, assunto_resp, corpo_resp)
