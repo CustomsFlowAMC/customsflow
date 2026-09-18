@@ -109,8 +109,9 @@ def enviar_resposta(email_addr, senha, msg_original, arquivos_processados, assun
 
     message_id = msg_original.get("Message-ID")
     if message_id:
-        resposta["In-Reply-To"] = message_id
-        resposta["References"] = message_id
+        message_id_limpo = " ".join(message_id.split())
+        resposta["In-Reply-To"] = message_id_limpo
+        resposta["References"] = message_id_limpo
 
     resposta.set_content(corpo_resp)
 
