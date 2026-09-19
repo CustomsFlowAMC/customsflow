@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CustomsFlow Hub</title>
+<meta name="theme-color" content="#141518">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CustomsFlow">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --side:#141518; --bg:#1d1f23; --panel:#25282d; --line:#33373d;
+  --txt:#eceef1; --mute:#9aa1ab; --accent:#3ddc97; --ok:#3ddc97; --err:#ff6b6b;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--txt);font-size:14px;line-height:1.45}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100%}
+.side{background:var(--side);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 18px;font-weight:600;font-size:16px}
+.brand svg{flex:none}
+.grp{color:var(--mute);font-size:12px;padding:16px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;border-radius:8px;padding:9px 10px;text-align:left;cursor:pointer;color:var(--mute)}
+.nav:hover{background:#1e2024;color:var(--txt)}
+.nav[aria-current="page"]{background:#1f3a31;color:var(--accent)}
+.nav .chip{width:9px;height:9px;border-radius:3px;flex:none}
+.nav .n{margin-left:auto;font-size:12px;color:var(--mute)}
+.nav[aria-current="page"] .n{color:var(--accent)}
+.sp{flex:1}
+.user{border-top:1px solid var(--line);padding:12px 10px 4px;color:var(--mute);font-size:12px}
+.user b{display:block;color:var(--txt);font-weight:500;font-size:13px}
+
+.main{padding:24px 28px 48px;min-width:0}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.top h1{font-size:20px;font-weight:600;margin:0;margin-right:auto}
+.menu-btn{display:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;cursor:pointer}
+select{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.pill{font-size:12px;padding:3px 10px;border-radius:99px;background:#3a2226;color:var(--err)}
+.pill.ok{background:#1f3a31;color:var(--ok)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.kpi .l{color:var(--mute);font-size:12px}
+.kpi .v{font-size:26px;font-weight:600;margin-top:2px}
+.kpi .v.err{color:var(--err)} .kpi .v.ok{color:var(--ok)}
+
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:14px;font-weight:600}
+.chart{width:100%;height:190px;display:block}
+.legend{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.legend div{display:flex;align-items:center;gap:8px}
+.legend .chip{width:9px;height:9px;border-radius:3px}
+.legend .n{margin-left:auto;color:var(--mute)}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{color:var(--mute);font-weight:500;font-size:12px;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid #2c2f35;vertical-align:top}
+tr:last-child td{border-bottom:0}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st.ok{color:var(--ok)} .st.err{color:var(--err)}
+.tag{display:inline-flex;align-items:center;gap:7px}
+.tag i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.empty{padding:28px 10px;text-align:center;color:var(--mute)}
+.note{color:var(--mute);font-size:12px;margin-top:10px}
+
+.autos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.auto b{display:block;font-weight:600;margin-bottom:4px}
+.auto p{margin:0 0 10px;color:var(--mute)}
+
+.scrim{display:none}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:260px;z-index:20;transform:translateX(-100%);transition:transform .2s}
+  .side.open{transform:none}
+  .scrim.open{display:block;position:fixed;inset:0;background:#000a;z-index:10}
+  .menu-btn{display:inline-block}
+  .main{padding:16px 14px 40px}
+  .grid2{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.side{transition:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Menu">
+    <div class="brand">
+      <img src="icon-192.png" width="28" height="28" alt="" style="border-radius:6px;flex:none">
+      CustomsFlow
+    </div>
+    <div id="menu"></div>
+    <div class="sp"></div>
+    <div class="user"><b>Macedo</b>Pinho · Comex</div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <div class="top">
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">☰</button>
+      <h1 id="titulo">Visão geral</h1>
+      <span class="pill" id="pill" hidden></span>
+      <select id="periodo" aria-label="Período">
+        <option value="1">Hoje</option>
+        <option value="7">Últimos 7 dias</option>
+        <option value="30" selected>Últimos 30 dias</option>
+        <option value="0">Tudo</option>
+      </select>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<script>
+/* ========= CONFIGURAÇÃO (edite aqui) ========= */
+
+// Arquivo JSON que o robô gera a cada execução.
+const DATA_URL = 'dados.json';
+
+// Clientes do menu. "match" = pedaços do e-mail do remetente que identificam o cliente.
+const CLIENTES = [
+  { id:'volvo', nome:'Volvo',      cor:'#5b8def', match:['volvo'] },
+  { id:'vw',    nome:'Volkswagen', cor:'#4cc3d9', match:['volkswagen','vw.com','vwco'] },
+  { id:'bosch', nome:'Bosch',      cor:'#ff6b6b', match:['bosch'] },
+  { id:'wap',   nome:'Wap',        cor:'#f2b84b', match:['wap'] },
+];
+// Remetentes específicos que não seguem o domínio (e-mail completo -> id do cliente)
+const REMETENTES = {
+  // 'fulano@pinho.com.br': 'vw',
+};
+
+const AUTOMACOES = [
+  { nome:'Ajuste de fatura por destino', desc:'Edita a invoice em PDF conforme o país de destino e devolve por e-mail.', no_hub:true },
+  { nome:'Conferência de documentos',    desc:'Confere Invoice, Certificado de Origem e Extrato da DUE.', no_hub:false },
+  { nome:'Leitura de faturas (OCR)',      desc:'Extrai número, valor DAP e moeda de faturas escaneadas.', no_hub:false },
+  { nome:'Conferência de peso',           desc:'Cruza Invoice com Packing List e soma o peso líquido.', no_hub:false },
+];
+
+/* ========= DADOS ========= */
+let REGISTROS = [];
+let DEMO = false;
+
+const OK_WORDS = ['ok','sucesso','success','processado','processada','concluido','concluído','enviado'];
+
+function clienteDe(email){
+  const em = String(email||'').toLowerCase();
+  if (REMETENTES[em]) return REMETENTES[em];
+  const c = CLIENTES.find(c => c.match.some(m => em.includes(m)));
+  return c ? c.id : 'outros';
+}
+
+function parseData(t){
+  if(!t) return null;
+  const str = String(t).trim();
+  // dd/mm/aaaa hh:mm(:ss)
+  let m = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ ,T]+(\d{1,2}):(\d{2}))?/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1], +(m[4]||0), +(m[5]||0));
+  // aaaa-mm-dd hh:mm(:ss) — o Safari do iPhone não aceita com espaço, então monta na mão
+  m = str.match(/(\d{4})-(\d{2})-(\d{2})(?:[ T]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if (m){
+    const utc = /(Z|[+-]\d{2}:?\d{2})$/.test(str);
+    const args = [+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0)];
+    return utc ? new Date(str.replace(' ','T')) : new Date(...args);
+  }
+  const d = new Date(str);
+  return isNaN(d) ? null : d;
+}
+
+function achata(dados){
+  const out = [];
+  (dados.execucoes || []).forEach(ex => {
+    const d = parseData(ex.data_hora);
+    (ex.processadas || []).forEach(p => out.push({
+      data: d,
+      dataTexto: ex.data_hora || '',
+      remetente: p.remetente || '',
+      arquivo: p.arquivo || '',
+      resumo: p.resumo || '',
+      cliente: clienteDe(p.remetente),
+      erro: p.status !== 'ok'
+    }));
+  });
+  return out;
+}
+
+async function carregar(){
+  try{
+    const resp = await fetch(DATA_URL + '?t=' + Date.now());
+    if(!resp.ok) throw new Error(resp.status);
+    REGISTROS = achata(await resp.json());
+  }catch(e){
+    DEMO = true;
+    REGISTROS = demo();
+  }
+}
+
+function demo(){
+  const rem = ['jo•••@consultant.volvo.com','ma•••@consultant.volvo.com','an•••@volkswagen.com.br','pa•••@bosch.com','ka•••@wap.com.br'];
+  const ex = [];
+  for(let i=0;i<40;i++){
+    const d = new Date(Date.now() - Math.random()*20*864e5);
+    ex.push({data_hora:d.toISOString(), processadas:[{arquivo:'FAT_'+(9000+i)+'.pdf', remetente:rem[i%5], resumo:['Suécia: campo removido','Índia: nota de madeira','EUA: campo removido'][i%3], status: i%11===0?'erro':'ok'}]});
+  }
+  return achata({execucoes:ex});
+}
+
+/* ========= ESTADO E RENDER ========= */
+let vistaAtual = 'geral';
+
+const $ = s => document.querySelector(s);
+const cli = id => CLIENTES.find(c => c.id === id) || {id:'outros', nome:'Outros', cor:'#7a828e'};
+
+function filtrados(){
+  const dias = +$('#periodo').value;
+  let l = REGISTROS;
+  if (dias){
+    const lim = Date.now() - dias*864e5;
+    l = l.filter(r => !r.data || r.data.getTime() >= lim);
+  }
+  if (CLIENTES.some(c => c.id === vistaAtual)) l = l.filter(r => r.cliente === vistaAtual);
+  return l.sort((a,b) => (b.data||0) - (a.data||0));
+}
+
+function mascara(e){
+  const s = String(e||''); const i = s.indexOf('@');
+  if (i < 1) return s || '—';
+  if (/[•*]/.test(s)) return s;
+  return s.slice(0, Math.min(2,i)) + '•••' + s.slice(i);
+}
+function fmt(d){ return d ? d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'; }
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function montaMenu(){
+  const conta = id => REGISTROS.filter(r => r.cliente === id).length;
+  const item = (id, rotulo, extra='') =>
+    `<button class="nav" data-v="${id}" ${id===vistaAtual?'aria-current="page"':''}>${extra}${esc(rotulo)}<span class="n">${id==='geral'||id==='auto'||id==='hist'?'':conta(id)}</span></button>`;
+  const icone = c => `<span class="chip" style="background:${c}"></span>`;
+  $('#menu').innerHTML =
+    item('geral','Visão geral') +
+    `<div class="grp">Clientes</div>` +
+    CLIENTES.map(c => item(c.id, c.nome, icone(c.cor))).join('') +
+    (REGISTROS.some(r => r.cliente==='outros') ? item('outros','Outros', icone('#7a828e')) : '') +
+    `<div class="grp">Hub</div>` +
+    item('auto','Automações') +
+    item('hist','Histórico');
+  document.querySelectorAll('.nav').forEach(b => b.onclick = () => { vistaAtual = b.dataset.v; fechaMenu(); render(); });
+}
+
+function kpis(l){
+  const erros = l.filter(r => r.erro).length;
+  const ok = l.length - erros;
+  const taxa = l.length ? Math.round(ok/l.length*100) : 0;
+  const hoje = REGISTROS.filter(r => r.data && r.data.toDateString() === new Date().toDateString()).length;
+  return `<div class="kpis">
+    <div class="card kpi"><div class="l">Processadas</div><div class="v">${l.length}</div></div>
+    <div class="card kpi"><div class="l">Com sucesso</div><div class="v ok">${ok}</div></div>
+    <div class="card kpi"><div class="l">Com erro</div><div class="v ${erros?'err':''}">${erros}</div></div>
+    <div class="card kpi"><div class="l">Taxa de sucesso</div><div class="v">${taxa}%</div></div>
+  </div>`;
+}
+
+function grafico(l){
+  const dias = 14, hoje = new Date(); hoje.setHours(0,0,0,0);
+  const cols = [];
+  for(let i=dias-1;i>=0;i--){ const d = new Date(hoje); d.setDate(d.getDate()-i); cols.push({d, ok:0, err:0}); }
+  l.forEach(r => { if(!r.data) return; const k = new Date(r.data); k.setHours(0,0,0,0);
+    const c = cols.find(c => c.d.getTime() === k.getTime()); if(c) r.erro ? c.err++ : c.ok++; });
+  const max = Math.max(1, ...cols.map(c => c.ok + c.err));
+  const W = 560, H = 190, pb = 22, bw = W/dias;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Faturas por dia nos últimos 14 dias">`;
+  cols.forEach((c,i) => {
+    const hOk = (c.ok/max)*(H-pb-8), hEr = (c.err/max)*(H-pb-8), x = i*bw + bw*0.2, w = bw*0.6;
+    s += `<rect x="${x}" y="${H-pb-hOk}" width="${w}" height="${hOk}" rx="2" fill="#3ddc97"/>`;
+    s += `<rect x="${x}" y="${H-pb-hOk-hEr}" width="${w}" height="${hEr}" rx="2" fill="#ff6b6b"/>`;
+    if (i % 2 === 0 || dias < 8) s += `<text x="${x+w/2}" y="${H-6}" text-anchor="middle" fill="#9aa1ab" font-size="10">${c.d.getDate()}/${c.d.getMonth()+1}</text>`;
+  });
+  return s + '</svg>';
+}
+
+function rosca(l){
+  const ids = [...CLIENTES.map(c=>c.id),'outros'];
+  const dados = ids.map(id => ({c:cli(id), n:l.filter(r=>r.cliente===id).length})).filter(x=>x.n>0);
+  const tot = dados.reduce((a,b)=>a+b.n,0);
+  if(!tot) return '<div class="empty">Sem dados no período.</div>';
+  let ang = -Math.PI/2, arcos = '';
+  const R=62, r=40, cx=80, cy=80;
+  dados.forEach(x => {
+    const a2 = ang + (x.n/tot)*Math.PI*2, g = (a2-ang) > Math.PI ? 1 : 0;
+    if (dados.length === 1){
+      arcos += `<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="${x.c.cor}" stroke-width="${R-r}"/>`;
+    } else {
+      const p = (rad,a)=>[cx+rad*Math.cos(a), cy+rad*Math.sin(a)];
+      const [x1,y1]=p(R,ang),[x2,y2]=p(R,a2),[x3,y3]=p(r,a2),[x4,y4]=p(r,ang);
+      arcos += `<path d="M${x1} ${y1}A${R} ${R} 0 ${g} 1 ${x2} ${y2}L${x3} ${y3}A${r} ${r} 0 ${g} 0 ${x4} ${y4}Z" fill="${x.c.cor}"/>`;
+    }
+    ang = a2;
+  });
+  return `<svg viewBox="0 0 160 160" width="150" height="150" style="display:block;margin:0 auto" role="img" aria-label="Faturas por cliente">${arcos}<text x="80" y="86" text-anchor="middle" fill="#eceef1" font-size="20" font-weight="600">${tot}</text></svg>
+  <div class="legend">${dados.map(x=>`<div><span class="chip" style="background:${x.c.cor}"></span>${esc(x.c.nome)}<span class="n">${x.n}</span></div>`).join('')}</div>`;
+}
+
+function tabela(l, limite){
+  if(!l.length) return '<div class="empty">Nenhuma fatura processada neste período.</div>';
+  const linhas = l.slice(0, limite).map(r => {
+    const c = cli(r.cliente);
+    return `<tr>
+      <td>${r.data ? fmt(r.data) : esc(r.dataTexto||'—')}</td>
+      <td><span class="tag"><i style="background:${c.cor}"></i>${esc(c.nome)}</span></td>
+      <td>${esc(r.arquivo||'—')}</td>
+      <td>${esc(r.resumo||'—')}</td>
+      <td>${esc(mascara(r.remetente))}</td>
+      <td><span class="st ${r.erro?'err':'ok'}">${r.erro?'Erro':'Processada'}</span></td>
+    </tr>`;
+  }).join('');
+  return `<div class="tbl-wrap"><table><thead><tr><th>Data</th><th>Cliente</th><th>Arquivo</th><th>Resumo</th><th>Remetente</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table></div>
+  ${l.length>limite?`<div class="note">Mostrando ${limite} de ${l.length}. Veja tudo em Histórico.</div>`:''}`;
+}
+
+function render(){
+  montaMenu();
+  const view = $('#view'), pill = $('#pill');
+  const eCliente = CLIENTES.some(c => c.id === vistaAtual) || vistaAtual === 'outros';
+  $('#periodo').style.display = vistaAtual === 'auto' ? 'none' : '';
+  pill.hidden = !DEMO; pill.className = 'pill'; pill.textContent = 'Dados de exemplo';
+
+  if (vistaAtual === 'auto'){
+    $('#titulo').textContent = 'Automações';
+    view.innerHTML = `<div class="autos">${AUTOMACOES.map(a => `
+      <div class="card auto"><b>${esc(a.nome)}</b><p>${esc(a.desc)}</p>
+      <span class="st ${a.no_hub?'ok':''}" style="${a.no_hub?'':'color:var(--mute)'}">${a.no_hub?'Ativa no hub':'Ainda roda localmente'}</span></div>`).join('')}</div>`;
+    return;
+  }
+
+  const l = filtrados();
+  if (vistaAtual === 'hist'){
+    $('#titulo').textContent = 'Histórico';
+    view.innerHTML = `<div class="card">${tabela(l, 500)}</div>`;
+    return;
+  }
+  $('#titulo').textContent = vistaAtual === 'geral' ? 'Visão geral' : cli(vistaAtual).nome;
+  view.innerHTML = kpis(l) + `
+    <div class="grid2">
+      <div class="card"><h2>Faturas por dia</h2>${grafico(l)}</div>
+      <div class="card"><h2>${eCliente ? 'Remetentes' : 'Por cliente'}</h2>${eCliente ? remetentes(l) : rosca(l)}</div>
+    </div>
+    <div class="card"><h2>Últimas processadas</h2>${tabela(l, 10)}</div>`;
+}
+
+function remetentes(l){
+  const m = {}; l.forEach(r => { const d = mascara(r.remetente); m[d] = (m[d]||0)+1; });
+  const arr = Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  if(!arr.length) return '<div class="empty">Sem dados no período.</div>';
+  const max = arr[0][1];
+  return `<div class="legend">${arr.map(([d,n]) => `<div style="display:block"><div style="display:flex;justify-content:space-between"><span>${esc(d)}</span><span style="color:var(--mute)">${n}</span></div><div style="height:5px;border-radius:3px;background:#33373d;margin-top:4px"><div style="height:5px;border-radius:3px;background:${cli(vistaAtual).cor};width:${n/max*100}%"></div></div></div>`).join('')}</div>`;
+}
+
+/* menu mobile */
+const fechaMenu = () => { $('#side').classList.remove('open'); $('#scrim').classList.remove('open'); };
+$('#menuBtn').onclick = () => { $('#side').classList.add('open'); $('#scrim').classList.add('open'); };
+$('#scrim').onclick = fechaMenu;
+$('#periodo').onchange = render;
+
+carregar().then(render);
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
