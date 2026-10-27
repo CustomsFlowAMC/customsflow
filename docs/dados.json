@@ -1,7 +1,42 @@
 {
-  "total_processadas": 174,
+  "total_processadas": 179,
   "total_erros": 0,
   "execucoes": [
+    {
+      "data_hora": "2026-10-27 22:29:51 UTC",
+      "processadas": [
+        {
+          "arquivo": "Invoice_PMT260591.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: INDIA; 2 pagina(s); campo alterado para 'Country of Origin' / 'SWEDEN'; observacao da madeira incluida"
+        },
+        {
+          "arquivo": "Invoice_PMT260590.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: INDIA; 2 pagina(s); campo alterado para 'Country of Origin' / 'SWEDEN'; observacao da madeira incluida"
+        },
+        {
+          "arquivo": "Invoice_PMT260589.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260588.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260587.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        }
+      ]
+    },
     {
       "data_hora": "2026-10-26 20:14:24 UTC",
       "processadas": [
