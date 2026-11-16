@@ -1,7 +1,24 @@
 {
   "total_processadas": 182,
-  "total_erros": 0,
+  "total_erros": 2,
   "execucoes": [
+    {
+      "data_hora": "2026-11-16 18:47:35 UTC",
+      "processadas": [
+        {
+          "arquivo": "Invoice_PMT260611.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "erro",
+          "resumo": "Calling `PageObject.replace_contents()` for pages not assigned to a writer is deprecated and has been removed in pypdf 7.0.0. Attach the page to the writer first or use `PdfWriter(clone_from=...)` directly. The existing approach has proved being unreliable."
+        },
+        {
+          "arquivo": "Invoice_PMT260610.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "erro",
+          "resumo": "Calling `PageObject.replace_contents()` for pages not assigned to a writer is deprecated and has been removed in pypdf 7.0.0. Attach the page to the writer first or use `PdfWriter(clone_from=...)` directly. The existing approach has proved being unreliable."
+        }
+      ]
+    },
     {
       "data_hora": "2026-11-03 20:37:09 UTC",
       "processadas": [
