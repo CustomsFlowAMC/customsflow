@@ -1,7 +1,24 @@
 {
-  "total_processadas": 182,
+  "total_processadas": 184,
   "total_erros": 4,
   "execucoes": [
+    {
+      "data_hora": "2026-11-17 02:59:24 UTC",
+      "processadas": [
+        {
+          "arquivo": "Invoice_PMT260611.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        },
+        {
+          "arquivo": "Invoice_PMT260610.pdf",
+          "remetente": "j***@consultant.volvo.com",
+          "status": "ok",
+          "resumo": "destino: OUTRO (remocao simples); 2 pagina(s); campo removido"
+        }
+      ]
+    },
     {
       "data_hora": "2026-11-17 02:47:19 UTC",
       "processadas": [
