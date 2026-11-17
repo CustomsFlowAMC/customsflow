@@ -161,10 +161,11 @@ def process(input_path, output_path):
 
             overlays.append((pw, ph, ops_note))
 
+        # pypdf 7+: a pagina precisa pertencer ao writer ANTES do merge.
+        # Por isso adicionamos primeiro e fazemos o merge na pagina retornada.
+        wpage = writer.add_page(page)
         for pw, ph, ops in overlays:
-            page.merge_page(overlay_for_page(pw, ph, ops))
-
-        writer.add_page(page)
+            wpage.merge_page(overlay_for_page(pw, ph, ops))
 
     note_added = note_page_index is not None
 
@@ -186,3 +187,4 @@ def process(input_path, output_path):
         else:
             partes.append("!! ancora da observacao NAO encontrada")
     return "; ".join(partes)
+  
