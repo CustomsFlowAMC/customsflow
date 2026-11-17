@@ -12,11 +12,14 @@ Roda dentro do GitHub Actions (agendado). A cada execucao:
      anexados.
   4) Marca o e-mail como lido/processado.
   5) Atualiza docs/dados.json com o historico, para o painel (GitHub Pages).
+  6) Se alguma fatura der erro, envia um ALERTA por e-mail (ALERT_EMAIL).
 
 Variaveis de ambiente esperadas (configuradas como Secrets no GitHub):
   EMAIL_ADDRESS        - ex: customsflow@gmail.com
   EMAIL_APP_PASSWORD   - senha de app do Gmail (16 caracteres)
   ALLOWED_SENDERS       - lista separada por virgula de remetentes autorizados
+  ALERT_EMAIL          - (opcional) quem recebe o alerta de erro.
+                         Se nao existir, o alerta vai para o EMAIL_ADDRESS.
 """
 
 import os
@@ -26,6 +29,7 @@ import zipfile
 import imaplib
 import smtplib
 import datetime
+import traceback
 from io import BytesIO
 from email import message_from_bytes
 from email.message import EmailMessage
@@ -126,12 +130,53 @@ def enviar_resposta(email_addr, senha, msg_original, arquivos_processados, assun
         smtp.send_message(resposta)
 
 
+def enviar_alerta(email_addr, senha, destino, erros):
+    """Envia um e-mail de alerta listando as faturas que deram erro.
+    Nunca derruba o robo: se o alerta falhar, so registra no log."""
+    try:
+        alerta = EmailMessage()
+        alerta["From"] = email_addr
+        alerta["To"] = destino
+        alerta["Subject"] = f"[CustomsFlow] ALERTA: {len(erros)} fatura(s) com erro"
+
+        linhas = [
+            "O robo do CustomsFlow encontrou erro ao processar a(s) fatura(s) abaixo.",
+            "O remetente NAO recebeu o retorno dessas faturas.",
+            "",
+        ]
+        for e in erros:
+            linhas += [
+                f"Arquivo:   {e['arquivo']}",
+                f"Remetente: {e['remetente']}",
+                f"Assunto:   {e['assunto']}",
+                f"Erro:      {e['erro']}",
+                "",
+            ]
+        linhas += [
+            "Depois de corrigir, marque o e-mail original como NAO LIDO",
+            "(ou peca o reenvio) e rode o workflow manualmente.",
+            "",
+            "Detalhe tecnico (traceback do primeiro erro):",
+            erros[0]["traceback"],
+        ]
+        alerta.set_content("\n".join(linhas))
+
+        contexto = ssl.create_default_context()
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, context=contexto) as smtp:
+            smtp.login(email_addr, senha)
+            smtp.send_message(alerta)
+        print(f"Alerta de erro enviado para {destino}.")
+    except Exception as ex:
+        print(f"!! Falha ao enviar alerta de erro: {ex}")
+
+
 def main():
     email_addr = os.environ["EMAIL_ADDRESS"]
     senha = os.environ["EMAIL_APP_PASSWORD"]
     remetentes_permitidos = [
         r.strip().lower() for r in os.environ.get("ALLOWED_SENDERS", "").split(",") if r.strip()
     ]
+    alerta_destino = os.environ.get("ALERT_EMAIL", "").strip() or email_addr
     assunto_resp = os.environ.get("ASSUNTO_RESPOSTA", "Faturas ajustadas - retorno automatico")
     corpo_resp = os.environ.get(
         "CORPO_RESPOSTA",
@@ -144,6 +189,7 @@ def main():
         "data_hora": datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
         "processadas": [],
     }
+    erros_para_alerta = []
 
     if not remetentes_permitidos:
         print("Nenhum remetente autorizado configurado (ALLOWED_SENDERS). Encerrando.")
@@ -198,6 +244,13 @@ def main():
                             {"arquivo": nome_arquivo, "remetente": mascarar_email(remetente), "status": "erro", "resumo": str(e)}
                         )
                         dados["total_erros"] += 1
+                        erros_para_alerta.append({
+                            "arquivo": nome_arquivo,
+                            "remetente": remetente,
+                            "assunto": msg.get("Subject", "(sem assunto)"),
+                            "erro": str(e),
+                            "traceback": traceback.format_exc(),
+                        })
 
             if houve_pdf and anexos_processados:
                 enviar_resposta(email_addr, senha, msg, anexos_processados, assunto_resp, corpo_resp)
@@ -214,6 +267,10 @@ def main():
     else:
         print("Nenhum e-mail novo encontrado.")
 
+    if erros_para_alerta:
+        enviar_alerta(email_addr, senha, alerta_destino, erros_para_alerta)
+
 
 if __name__ == "__main__":
     main()
+      
